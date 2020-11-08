@@ -5,6 +5,9 @@
   "main": "index.js",
   "author": "arian derida hamami",
   "license": "MIT",
+  "scripts": {
+    "dev": "nodemon --exec babel-node --presets=@babel/preset-env ./src/index.js"
+  },
   "dependencies": {
     "@babel/cli": "^7.12.1",
     "@babel/core": "^7.12.3",
