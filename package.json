@@ -6,7 +6,7 @@
   "author": "arian derida hamami",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --exec babel-node --presets=@babel/preset-env ./src/index.js"
+    "dev": "nodemon --exec babel-node --presets=@babel/preset-env ./src/server.js"
   },
   "dependencies": {
     "@babel/cli": "^7.12.1",
