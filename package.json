@@ -19,11 +19,17 @@
     "apollo-server-express": "^2.19.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-mysql-session": "^2.1.4",
+    "express-session": "^1.17.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
+    "mysql": "^2.18.1",
     "mysql2": "^2.2.5",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
     "sequelize": "^6.3.5"
   }
 }
