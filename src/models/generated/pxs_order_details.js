@@ -1,5 +1,5 @@
-module.exports = (sequelize, Sequelize) => {
-  const OrderDetails = sequelize.define(
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define(
     "pxs_order_details",
     {
       id: {
@@ -57,5 +57,4 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "pxs_order_details",
     }
   );
-  return OrderDetails;
 };

@@ -1,6 +1,9 @@
 require("dotenv").config({ path: __dirname + "/../../.env" });
 import config from "../config.json";
 import Sequelize from "sequelize";
+import fs from "fs";
+import path from "path";
+let db = {};
 
 const sequelize = new Sequelize(
   config[process.env.MODE].DB,
@@ -34,7 +37,46 @@ const sequelize = new Sequelize(
   }
 );
 
-const db = {};
+const authenticate = async () => {
+  try {
+    // if (process.env.DISABLE_DB_LOGGING === "true") {
+    //   console.log("DB Logging is disabled :)");
+    //   db.options.logging = () => {};
+    // }
+    await sequelize.authenticate();
+  } catch (error) {
+    console.error(error);
+    await authenticate();
+  }
+};
+
+authenticate().then((_) => null); //eslint-disable-line
+
+let files = fs.readdirSync(__dirname + "/generated");
+// for (let f of files) {
+//   if (f.indexOf("index.js") >= 0) continue;
+//   sequelize.import("./generated/" + f);
+//   console.log(`Loaded Model file ${f}`);
+// }
+
+fs.readdirSync(__dirname + "/generated")
+
+  .filter((file) => file !== "index.js")
+
+  .forEach((file) => {
+    //const model = sequelize.import(path.join(__dirname, file))
+
+    var model = require(path.join(__dirname + "/generated", file))(
+      sequelize,
+      Sequelize.DataTypes
+    );
+
+    console.log("ASDASDDDD------>", model);
+
+    db[model.name] = model;
+  });
+
+console.log("ASDASDASD", db);
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 

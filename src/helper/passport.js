@@ -1,29 +1,58 @@
-require("dotenv").config({ path: __dirname + "/../../.env" });
-import mysql from "mysql";
-import session from "express-session";
-var MySQLStore = require("express-mysql-session")(session);
+const LocalStrategy = require("passport-local").Strategy;
+const db = require("../models");
+const crypto = require("crypto");
 
-var connection = mysql.createConnection({
-  host: process.env.SESSIONSDB_HOST,
-  port: process.env.PORT,
-  user: process.env.SESSIONSDB_USER,
-  password: "",
-  database: process.env.SESSIONSDB_DB,
-});
+const authConfig = (passport) => {
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
 
-var sessionStore = new MySQLStore(
-  {
-    checkExpirationInterval: parseInt(
-      process.env.SESSIONSDB_CHECK_EXP_INTERVAL,
-      10
-    ),
-    expiration: parseInt(process.env.SESSIONSDB_EXPIRATION, 10),
-  },
-  connection
-);
+  passport.deserializeUser((id, done) => {
+    db.Users.findOne({
+      id: id,
+    })
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((error) => {
+        done(error, null);
+      });
+  });
 
-/* Create a cookie that expires in 1 day */
-var expireDate = new Date();
-expireDate.setDate(expireDate.getDate() + 1);
+  passport.use(
+    new LocalStrategy(
+      { usernameField: "email" },
+      (username, password, done) => {
+        db.Users.findOne({
+          email: username,
+        })
+          .then((user) => {
+            if (!user) {
+              return done(null, false);
+            }
 
-export default { connection, sessionStore, expireDate };
+            const iv = crypto.randomBytes(16);
+
+            let pixosKey = crypto.createDecipheriv(
+              "aes-256-ccm",
+              "GOL$&H3@V00NG7%8J9FF7^-27HJ^72(K",
+              iv
+            );
+            let pixosStr = pixosKey.update(user.password, "hex", "utf8");
+            pixosStr += pixosKey.final("utf8");
+
+            if (pixosStr !== password) {
+              return done(null, false);
+            }
+
+            return done(null, user);
+          })
+          .catch((error) => {
+            return done(error);
+          });
+      }
+    )
+  );
+};
+
+export default authConfig;

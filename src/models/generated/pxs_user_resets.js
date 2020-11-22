@@ -1,6 +1,6 @@
-module.exports = (sequelize, Sequelize) => {
-  const Categories = sequelize.define(
-    "pxs_categories",
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define(
+    "pxs_user_resets",
     {
       id: {
         type: DataTypes.BIGINT,
@@ -8,13 +8,13 @@ module.exports = (sequelize, Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      category_name: {
+      email: {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
-      category_description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+      token: {
+        type: DataTypes.STRING(250),
+        allowNull: false,
       },
       created_at: {
         type: DataTypes.DATE,
@@ -30,8 +30,7 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     {
-      tableName: "pxs_categories",
+      tableName: "pxs_user_resets",
     }
   );
-  return Categories;
 };

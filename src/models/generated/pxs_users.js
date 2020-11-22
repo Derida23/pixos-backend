@@ -1,5 +1,5 @@
-module.exports = (sequelize, Sequelize) => {
-  const Users = sequelize.define(
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define(
     "pxs_users",
     {
       id: {
@@ -32,29 +32,30 @@ module.exports = (sequelize, Sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      adress_district: {
+      address_district: {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
-      adress_city: {
+      address_city: {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
-      adress_province: {
+      address_province: {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
       active: {
         type: DataTypes.INTEGER(2),
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 1,
       },
       last_login: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       remember_token: {
         type: DataTypes.STRING(250),
-        allowNull: false,
+        allowNull: true,
       },
       created_at: {
         type: DataTypes.DATE,
@@ -73,5 +74,4 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "pxs_users",
     }
   );
-  return Users;
 };
