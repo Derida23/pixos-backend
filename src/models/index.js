@@ -71,12 +71,11 @@ fs.readdirSync(__dirname + "/generated")
       Sequelize.DataTypes
     );
 
-    console.log("ASDASDDDD------>", model);
-
     db[model.name] = model;
   });
 
-console.log("ASDASDASD", db);
+console.log("FILE PROJECTOR", db);
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 

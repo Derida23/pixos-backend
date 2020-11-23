@@ -1,16 +1,37 @@
+require("dotenv").config({ path: __dirname + "/../../.env" });
+import db from "../models";
+import crypto from "crypto";
+
 const LocalStrategy = require("passport-local").Strategy;
-const db = require("../models");
-const crypto = require("crypto");
 
 const authConfig = (passport) => {
+  const decrypt = (text) => {
+    let textParts = text.split(":");
+    let iv = Buffer.from(textParts.shift(), "hex");
+    let encryptedText = Buffer.from(textParts.join(":"), "hex");
+    let decipher = crypto.createDecipheriv(
+      process.env.ALGORITHM,
+      Buffer.from(process.env.KEY),
+      iv
+    );
+    let decrypted = decipher.update(encryptedText);
+
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+    return decrypted.toString();
+  };
+
   passport.serializeUser((user, done) => {
     done(null, user.id);
   });
 
   passport.deserializeUser((id, done) => {
-    db.Users.findOne({
-      id: id,
-    })
+    db.pxs_users
+      .findOne({
+        where: {
+          id: id,
+        },
+      })
       .then((user) => {
         done(null, user);
       })
@@ -20,38 +41,30 @@ const authConfig = (passport) => {
   });
 
   passport.use(
-    new LocalStrategy(
-      { usernameField: "email" },
-      (username, password, done) => {
-        db.Users.findOne({
-          email: username,
+    new LocalStrategy({ usernameField: "email" }, (user, password, done) => {
+      db.pxs_users
+        .findOne({
+          where: {
+            username: user,
+          },
         })
-          .then((user) => {
-            if (!user) {
-              return done(null, false);
-            }
+        .then((user) => {
+          if (!user) {
+            return done(null, false);
+          }
 
-            const iv = crypto.randomBytes(16);
+          const decPass = decrypt(user.password);
 
-            let pixosKey = crypto.createDecipheriv(
-              "aes-256-ccm",
-              "GOL$&H3@V00NG7%8J9FF7^-27HJ^72(K",
-              iv
-            );
-            let pixosStr = pixosKey.update(user.password, "hex", "utf8");
-            pixosStr += pixosKey.final("utf8");
+          if (decPass !== password) {
+            return done(null, false);
+          }
 
-            if (pixosStr !== password) {
-              return done(null, false);
-            }
-
-            return done(null, user);
-          })
-          .catch((error) => {
-            return done(error);
-          });
-      }
-    )
+          return done(null, user);
+        })
+        .catch((error) => {
+          return done(error);
+        });
+    })
   );
 };
 
