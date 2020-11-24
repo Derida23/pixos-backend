@@ -1,8 +1,12 @@
 require("dotenv").config({ path: __dirname + "/../../.env" });
 import db from "../models";
 import crypto from "crypto";
+import passportJWT from "passport-jwt";
 
 const LocalStrategy = require("passport-local").Strategy;
+
+let ExtractJwt = passportJWT.ExtractJwt;
+let JwtStrategy = passportJWT.Strategy;
 
 const authConfig = (passport) => {
   const decrypt = (text) => {
@@ -19,6 +23,11 @@ const authConfig = (passport) => {
     decrypted = Buffer.concat([decrypted, decipher.final()]);
 
     return decrypted.toString();
+  };
+
+  let jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_KEY,
   };
 
   passport.serializeUser((user, done) => {
@@ -50,13 +59,13 @@ const authConfig = (passport) => {
         })
         .then((user) => {
           if (!user) {
-            return done(null, false);
+            return done(null, false, { message: "User not found" });
           }
 
-          const decPass = decrypt(user.password);
+          const decryptPassword = decrypt(user.password);
 
-          if (decPass !== password) {
-            return done(null, false);
+          if (decryptPassword !== password) {
+            return done(null, false, { message: "Wrong Password" });
           }
 
           return done(null, user);
@@ -66,6 +75,36 @@ const authConfig = (passport) => {
         });
     })
   );
+
+  // lets create our strategy for web token
+
+  let strategy = new JwtStrategy(jwtOptions, (jwt_payload, done) => {
+    User.findOne({ where: { id: jwt_payload.id } })
+      .then((user) => {
+        if (user) {
+          return done(null, user);
+        }
+        return done(null, false);
+      })
+      .catch((err) => console.log(err));
+  });
+  // new JwtStrategy(jwtOptions, async (token, done) => {
+  // try {
+  //   return done(null, token.user);
+  // } catch (error) {
+  //   done(error);
+  // }
+  // });
+
+  // let user = getUser({ id: jwt_payload.id });
+  // if (user, done) {
+  //   next(null, user);
+  // } else {
+  //   next(null, false);
+  // }
+
+  // use the strategy
+  passport.use(strategy);
 };
 
 export default authConfig;

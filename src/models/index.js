@@ -74,7 +74,7 @@ fs.readdirSync(__dirname + "/generated")
     db[model.name] = model;
   });
 
-console.log("FILE PROJECTOR", db);
+// console.log("FILE PROJECTOR", db);
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

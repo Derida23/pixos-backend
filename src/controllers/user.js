@@ -3,6 +3,7 @@ import crypto from "crypto";
 import db from "../models";
 import passport from "passport";
 import Express from "express";
+import jwt from "jsonwebtoken";
 
 const User = Express.Router();
 
@@ -75,8 +76,8 @@ User.post("/register", async function (req, res) {
 
 User.post("/login", async function (req, res, next) {
   try {
-    passport.authenticate("local", (error, user, info) => {
-      console.log("AUTH ------->", error);
+    passport.authenticate("local", { session: false }, (error, user, info) => {
+      // console.log("AUTH ------->", error);
       if (error) {
         return res.status(400).json({
           status: "error",
@@ -93,10 +94,19 @@ User.post("/login", async function (req, res, next) {
         });
       }
 
+      // let payload = { id: user.id };
+      // let token = jwt.sign(payload, jwtOptions.secretOrKey);
+      const body = { id: user.id, email: user.email };
+      const token = jwt.sign({ user: body }, process.env.JWT_KEY, {
+        expiresIn: "24h",
+      });
+
+      console.log(token);
+
       return res.status(200).json({
         status: "success",
         message: "Success, you've been logged in ",
-        data: user,
+        data: { profile: user, token: token },
       });
     })(req, res, next);
   } catch (error) {
